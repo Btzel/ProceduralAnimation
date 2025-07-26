@@ -61,6 +61,7 @@ public class GeckoController : MonoBehaviour
             _targetEyeRotation,
             1 - Mathf.Exp(-_eyeTrackingSpeed * Time.deltaTime)
         );
+
         _rightEyeBone.rotation = Quaternion.Slerp(
             _rightEyeBone.rotation,
             _targetEyeRotation,
@@ -100,6 +101,11 @@ public class GeckoController : MonoBehaviour
             rightEyeClampedYRotation,
             _rightEyeBone.localEulerAngles.z
         );
+    }
+
+    void LegStepperUpdate()
+    {
+        // will continue when learned 4 leg movement
     }
 
 }
