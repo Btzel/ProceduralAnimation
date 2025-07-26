@@ -519,8 +519,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.00113514, y: -0.9905473, z: -0.13692115, w: -0.008212098}
   m_LocalPosition: {x: 0, y: 0.186, z: 0.311}
-  m_LocalScale: {x: 0.57, y: 0.57, z: 0.73}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.65, y: 1.65, z: 1.65}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8033474378843607579}
   m_LocalEulerAnglesHint: {x: -15.74, y: -180.95, z: 0}
@@ -576,7 +576,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1044151275}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1074193275
 GameObject:
   m_ObjectHideFlags: 0
@@ -2399,13 +2399,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 845130469390993967}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0.162}
-  m_LocalScale: {x: 0.08627865, y: 0.27532324, z: 0.1897214}
-  m_ConstrainProportionsScale: 0
+  m_LocalRotation: {x: 0, y: -0.5804898, z: 0, w: 0.8142675}
+  m_LocalPosition: {x: -0.12, y: 0.12, z: 0.3}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 8033474378843607603}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 845130470538826129}
+  m_LocalEulerAnglesHint: {x: 0, y: -70.97, z: 0}
 --- !u!1 &845130469390993967
 GameObject:
   m_ObjectHideFlags: 0
@@ -3023,7 +3023,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.46549404, y: 0.46549404, z: 0.46549404}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 845130469714023073}
   m_Father: {fileID: 8033474378843607605}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &845130469649235712
@@ -3310,13 +3311,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 845130469714023072}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0.162}
-  m_LocalScale: {x: 0.08627865, y: 0.27532324, z: 0.1897214}
-  m_ConstrainProportionsScale: 0
+  m_LocalRotation: {x: 0, y: -0.5804898, z: 0, w: 0.8142675}
+  m_LocalPosition: {x: 0.12, y: 0.12, z: 0.3}
+  m_LocalScale: {x: 0.6, y: 0.6, z: 0.6}
+  m_ConstrainProportionsScale: 1
   m_Children: []
-  m_Father: {fileID: 8033474378843607605}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 845130469639567609}
+  m_LocalEulerAnglesHint: {x: 0, y: -70.97, z: 0}
 --- !u!33 &845130469714023084
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -4604,7 +4605,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.46549404, y: 0.46549404, z: 0.46549404}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 845130469390993964}
   m_Father: {fileID: 8033474378843607603}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &845130470538826140
@@ -7063,8 +7065,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _target: {fileID: 1597342597}
   _headBone: {fileID: 8033474378843607579}
-  _headBoneRotationSpeed: 5
-  _headMaxTurnAngle: 90
+  _headTrackingSpeed: 8
+  _headMaxTurnAngle: 70
+  _leftEyeBone: {fileID: 845130470538826129}
+  _rightEyeBone: {fileID: 845130469639567609}
+  _eyeTrackingSpeed: 30
+  _leftEyeMaxYRotation: 10
+  _leftEyeMinYRotation: -180
+  _rightEyeMaxYRotation: 180
+  _rightEyeMinYRotation: -10
 --- !u!4 &8033474378843607585
 Transform:
   m_ObjectHideFlags: 0
@@ -7224,7 +7233,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 845130470538826129}
-  - {fileID: 845130469390993964}
   m_Father: {fileID: 8033474378843607579}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &8033474378843607605
@@ -7241,7 +7249,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 845130469639567609}
-  - {fileID: 845130469714023073}
   m_Father: {fileID: 8033474378843607579}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &8033474378843607611
