@@ -1,147 +1,76 @@
-using System.Collections.Generic;
+using System;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
-
 public class SpiderController : MonoBehaviour
-{
-
-    [Header("References")]
-    [SerializeField] private LegPair[] _legPairs;
-    [SerializeField] private Transform _body;
-
-    [Header("Raycast Settings")]
-    [SerializeField] private LayerMask _layerMask;
+{   
+    [Header("Settings")]
     [SerializeField] private float _raycastYOffset;
-    [SerializeField] private float _raycastDistance;
-
-    [Header("Step Settings")]
-    [SerializeField] private float _stepSpeed;
-
-    [Header("Body Settings")]
-    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _raycastMaxDistance;
+    [SerializeField] private LayerMask _raycastLayerMask;
     [SerializeField] private float _rotationSpeed;
-    [SerializeField] private float _rotationSmoothness;
+    [SerializeField] private float _movementSpeed;
+    [SerializeField] private float _alignSmoothSpeed;
 
-    private void Start()
+    private void Update()
     {
-        InitializeStepPositions();
+        UpdateSpiderRotation();
+        UpdateSpiderPosition();
     }
 
-    private void LateUpdate()
-    {
-        UpdateBodyPosition();
-        UpdateStepPositions();
-    }
-
-    
-
-    private void UpdateStepPositions()
-    {
-        foreach (LegPair leg in _legPairs)
-        {
-            Vector3 raycastStartPosition = leg.legTracker.transform.position + Vector3.up * _raycastYOffset;
-            if (Physics.Raycast(raycastStartPosition, Vector3.down, out RaycastHit hit, _raycastDistance, _layerMask))
-            {
-                if (Vector3.Distance(leg.lastLegPosition, hit.point) >  leg.legStepLength && leg.stepProgress >= 1f)
-                {
-                    leg.lastLegPosition = hit.point;
-                    leg.stepProgress = 0f;
-                }
-            }
-
-            if (leg.stepProgress < 1f)
-            {
-                leg.stepProgress += Time.deltaTime * _stepSpeed;
-
-                leg.legTarget.position = GetArcPosition(
-                    leg.legTarget.position,
-                    leg.lastLegPosition,
-                    leg.stepProgress,
-                    leg.legStepHeight
-                );
-            }
-        }
-    }
-
-    private Vector3 GetArcPosition(Vector3 start, Vector3 end, float progress, float height)
-    {
-        Vector3 pos = Vector3.Lerp(start, end, progress);
-        pos.y += Mathf.Sin(progress * Mathf.PI) * height;
-        return pos;
-    }
-
-    private void InitializeStepPositions()
-    {
-        foreach (LegPair leg in _legPairs)
-        {
-            Vector3 raycastStartPosition = leg.legTracker.transform.position + Vector3.up * _raycastYOffset;
-            if (Physics.Raycast(raycastStartPosition, Vector3.down, out RaycastHit hit, _raycastDistance, _layerMask))
-            {
-                leg.legTarget.position = hit.point;
-                leg.lastLegPosition = hit.point;
-            }
-        }
-    }
-
-    private void UpdateBodyPosition()
+    private void UpdateSpiderRotation()
     {
         float horizontalInput = Input.GetAxis("Horizontal");
+
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+        {
+            float rotationAmount = horizontalInput * _rotationSpeed * Time.deltaTime;
+            transform.Rotate(Vector3.up, rotationAmount);
+        }
+        Vector3 raycastStartPos = transform.position + transform.up * _raycastYOffset;
+        Vector3 raycastDirection = -transform.up;
+        if (Physics.Raycast(raycastStartPos, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
+        {
+            Quaternion targetRotation = Quaternion.FromToRotation(transform.up, hit.normal) * transform.rotation;
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * _alignSmoothSpeed);
+        }
+        
+    }
+
+    private void UpdateSpiderPosition()
+    {
         float verticalInput = Input.GetAxis("Vertical");
 
-        if (horizontalInput != 0)
+        if (Mathf.Abs(verticalInput) > 0.01f)
         {
-            float targetRotationY = _body.rotation.eulerAngles.y + horizontalInput * _rotationSpeed * Time.deltaTime;
-            Quaternion targetRotation = Quaternion.Euler(_body.rotation.eulerAngles.x, targetRotationY, _body.rotation.eulerAngles.z);
-            _body.rotation = Quaternion.Slerp(_body.rotation, targetRotation, _rotationSmoothness * Time.deltaTime);
+            Vector3 forwardMovement = transform.forward * verticalInput * _movementSpeed * Time.deltaTime;
+            transform.position += forwardMovement;
         }
+        
+        Vector3 raycastStartPos = transform.position + transform.up * _raycastYOffset;
+        Vector3 raycastDirection = -transform.up;
 
-        if (verticalInput != 0)
+        if (Physics.Raycast(raycastStartPos, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
         {
-            Vector3 moveDirection = _body.forward * verticalInput * _moveSpeed * Time.deltaTime;
-            _body.position += moveDirection;
-        }
+            transform.position = new Vector3(transform.position.x, hit.point.y, transform.position.z);
 
-        Vector3 raycastStartPosition = _body.position + Vector3.up * _raycastYOffset;
-        if (Physics.Raycast(raycastStartPosition, Vector3.down, out RaycastHit hit, _raycastDistance, _layerMask))
-        {
-            _body.position = new Vector3(_body.position.x, hit.point.y, _body.position.z);
         }
     }
 
     void OnDrawGizmos()
     {
-        foreach (LegPair leg in _legPairs)
+        Vector3 raycastStartPos = transform.position + transform.up * _raycastYOffset;
+        Vector3 raycastDirection = -transform.up;
+        if (Physics.Raycast(raycastStartPos, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
         {
-            // Raycasts
-            Vector3 raycastStartPosition = leg.legTracker.transform.position + Vector3.up * _raycastYOffset;
-            if (Physics.Raycast(raycastStartPosition, Vector3.down, out RaycastHit hit, _raycastDistance, _layerMask))
-            {
-                Gizmos.color = Color.green;
-                Gizmos.DrawLine(raycastStartPosition, hit.point);
-                //legTargetPosition Offset Sphere
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(hit.point, leg.legStepLength);
-            }
-            else
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(raycastStartPosition, raycastStartPosition + Vector3.down * _raycastDistance);
-            }
-
-            
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(raycastStartPos, hit.point);
+            Gizmos.DrawSphere(hit.point, 0.1f);
         }
-
-
-    }
-
-    [System.Serializable]
-    public class LegPair
-    {
-        public Transform legTarget;
-        public Transform legTracker;
-        public float legStepLength;
-        public float legStepHeight;
-        [HideInInspector] public Vector3 lastLegPosition;
-        [HideInInspector] public float stepProgress = 1f;
+        else
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(raycastStartPos, raycastStartPos + Vector3.down * _raycastMaxDistance);
+        }
     }
 }
