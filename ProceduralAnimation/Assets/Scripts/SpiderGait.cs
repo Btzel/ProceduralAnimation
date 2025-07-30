@@ -12,9 +12,10 @@ public class SpiderGait : MonoBehaviour
     [SerializeField] private float _raycastYOffset;
     [SerializeField] private float _raycastMaxDistance;
     [SerializeField] private LayerMask _raycastLayerMask;
+    [SerializeField] private float _sphereCastRadius = 0.05f; // 🔄 Yeni ekledik
+
     [Header("References")]
     [SerializeField] public SpiderLeg[] _spiderLeg;
-
 
     private void Update()
     {
@@ -27,18 +28,16 @@ public class SpiderGait : MonoBehaviour
         foreach (SpiderLeg spiderLeg in _spiderLeg)
         {
             if (spiderLeg.isMoving) continue;
+
             float distanceToTarget = Vector3.Distance(spiderLeg.spiderLegEnd.position, spiderLeg.spiderLegTarget.position);
             if (distanceToTarget > _stepDistance)
             {
                 Vector3 targetToEnd = (spiderLeg.spiderLegEnd.position - spiderLeg.spiderLegTarget.position).normalized;
- 
-                
-                Vector3 newTargetPos = spiderLeg.spiderLegEnd.position + targetToEnd * (_stepDistance/2);
-
-
-                Vector3 raycastStartPos = spiderLeg.spiderLegEnd.position + transform.up * _raycastYOffset;
+                Vector3 newTargetPos = spiderLeg.spiderLegEnd.position + targetToEnd * (_stepDistance * 3f / 4f);
+                Vector3 raycastStartPos = newTargetPos + transform.up * _raycastYOffset;
                 Vector3 raycastDirection = -transform.up;
-                if (Physics.Raycast(raycastStartPos, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
+
+                if (Physics.SphereCast(raycastStartPos, _sphereCastRadius, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
                 {
                     spiderLeg.startPosition = spiderLeg.spiderLegTarget.position;
                     spiderLeg.targetPosition = hit.point;
@@ -46,7 +45,6 @@ public class SpiderGait : MonoBehaviour
                     spiderLeg.moveStartTime = Time.time;
                 }
             }
-            
         }
     }
 
@@ -64,43 +62,39 @@ public class SpiderGait : MonoBehaviour
                 }
                 else
                 {
-                    Vector3 currentPos = Vector3.Lerp(
-                        spiderLeg.startPosition,
-                        spiderLeg.targetPosition,
-                        moveProgress
-                    );
-
+                    Vector3 currentPos = Vector3.Lerp(spiderLeg.startPosition, spiderLeg.targetPosition, moveProgress);
                     float heightOffset = 4 * _stepHeight * moveProgress * (1 - moveProgress);
                     currentPos.y += heightOffset;
-
                     spiderLeg.spiderLegTarget.position = currentPos;
                 }
             }
         }
     }
 
-
     private void OnDrawGizmos()
     {
         foreach (SpiderLeg spiderLeg in _spiderLeg)
         {
-            Vector3 raycastStartPos = spiderLeg.spiderLegEnd.position + transform.up * _raycastYOffset;
+            Vector3 targetToEnd = (spiderLeg.spiderLegEnd.position - spiderLeg.spiderLegTarget.position).normalized;
+            Vector3 newTargetPos = spiderLeg.spiderLegEnd.position + targetToEnd * (_stepDistance * 3f / 4f);
+            Vector3 raycastStartPos = newTargetPos + transform.up * _raycastYOffset;
             Vector3 raycastDirection = -transform.up;
-            if (Physics.Raycast(raycastStartPos, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
+
+            if (Physics.SphereCast(raycastStartPos, _sphereCastRadius, raycastDirection, out RaycastHit hit, _raycastMaxDistance, _raycastLayerMask))
             {
                 Gizmos.color = Color.green;
                 Gizmos.DrawLine(raycastStartPos, hit.point);
-                Gizmos.DrawSphere(hit.point, _stepDistance);
+                Gizmos.DrawSphere(hit.point, _sphereCastRadius);
             }
             else
             {
                 Gizmos.color = Color.red;
                 Gizmos.DrawLine(raycastStartPos, raycastStartPos + raycastDirection * _raycastMaxDistance);
+                Gizmos.DrawWireSphere(raycastStartPos, _sphereCastRadius);
             }
 
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(spiderLeg.spiderLegEnd.position, spiderLeg.spiderLegTarget.position);
-
         }
     }
 
